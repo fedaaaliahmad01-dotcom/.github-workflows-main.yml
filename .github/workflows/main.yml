@@ -1,0 +1,45 @@
+name: Build Android APK
+on: [push, workflow_dispatch]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install Dependencies
+        run: |
+          npm install @capacitor/core @capacitor/cli @capacitor/android
+          mkdir -p www
+          cp index.html www/
+          # If you have other files like style.css, they will be copied too:
+          cp *.css www/ 2>/dev/null || true
+          cp *.js www/ 2>/dev/null || true
+
+      - name: Create Capacitor Config
+        run: |
+          echo '{ "appId": "com.myapp.html", "appName": "MyHTMLApp", "webDir": "www" }' > capacitor.config.json
+
+      - name: Build Android Project
+        run: |
+          npx cap add android
+          npx cap copy android
+          npx cap sync android
+
+      - name: Build APK
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v3
+        with:
+          name: My-App-APK
+          path: android/app/build/outputs/apk/debug/app-debug.apk
