@@ -36,6 +36,14 @@ jobs:
           npx cap add android
           npx cap sync android
 
+      - name: Fix Duplicate Classes Issue
+        run: |
+          # This will force Gradle to exclude the duplicate Kotlin libraries
+          echo "configurations.all {
+              exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jdk7'
+              exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jdk8'
+          }" >> android/app/build.gradle
+
       - name: Build Debug APK
         run: |
           cd android
