@@ -8,41 +8,29 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Set up JDK 17
+      - name: Set up Java
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: Install Dependencies
+      - name: Install Capacitor & Setup
         run: |
           npm install @capacitor/core @capacitor/cli @capacitor/android
           mkdir -p www
           cp index.html www/
-          # Copy CSS and JS if they exist
+          # Copy assets if they exist
           cp *.css www/ 2>/dev/null || true
           cp *.js www/ 2>/dev/null || true
-
-      - name: Create Capacitor Config
-        run: |
           echo '{ "appId": "com.myapp.html", "appName": "MyHTMLApp", "webDir": "www" }' > capacitor.config.json
-
-      - name: Build Android Project
-        run: |
           npx cap add android
-          npx cap copy android
           npx cap sync android
 
-      - name: Build APK (Gradle)
+      - name: Build with Gradle
         run: |
           cd android
           chmod +x gradlew
-          ./gradlew assembleDebug
+          ./gradlew assembleDebug --stacktrace
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
